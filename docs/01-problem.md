@@ -14,7 +14,7 @@ Code can compute funnel metrics, but not explain them. An LLM chain can take the
 
 ## What v1 does
 1. Upload funnel data (CSV export from BigQuery).
-2. Code finds the biggest leak by segment (step × device, channel, country).
+2. Code finds the biggest leak by segment (step × device, channel).
 3. LLM chain:
    - explains the leak,
    - proposes 3 hypotheses,
@@ -32,3 +32,6 @@ Code can compute funnel metrics, but not explain them. An LLM chain can take the
 - Live connection to GA4 or a shop backend (CSV upload only)
 - Running or analysing the experiment itself
 - More than one leak per run
+
+## Backlog (v2)
+- Country segmentation (needs country in the BigQuery export; many segments will be too small to judge)
