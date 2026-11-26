@@ -31,3 +31,9 @@ One dataset for v1: `data/funnel.csv`, the GA4 sample e-commerce export (Google 
 |---|---|---|---|
 | 2026-11-26 | prompts v1, gemini-3.1-flash-lite, biggest leak (cpc) | Brief complete (7/7), numbers copied correctly | 6.1 s. 75-day run time flagged in risks. gemini-3.8-flash returned 503 all afternoon (ADR-003) |
 | 2026-11-26 | prompts v1, gemini-3.1-flash-lite, testable leak (organic) | Brief complete (7/7), numbers copied correctly | **114 s, fails the < 60 s bar**: no errors, but the API was slow (33 s, 79 s, 3 s per step). Headline described the overall step, not the organic segment |
+| 2026-11-26 | prompt 1 v2 (segment focus + check), 20 s timeout, 60 s budget · run 1 | 7/7, segment named, numbers copied correctly | **5.6 s** (1.6 / 2.2 / 1.8). No retries |
+| 2026-11-26 | same · run 2 | 7/7, segment named, numbers copied correctly | **56.2 s** (26.9 / 4.6 / 24.7). Step 1: flash-lite timed out at 20 s, 3.8-flash 503, flash-lite answered. Step 3: 503 on both, then flash-lite answered |
+| 2026-11-26 | same · run 3 | 7/7, segment named, numbers copied correctly | **46.0 s** (2.7 / 25.3 / 18.0). Step 2: flash-lite 503, 3.8-flash timed out at 20 s, flash-lite answered |
+
+All 3 runs finished within the 60 s bar, but 2 of 3 only just did, because of retries. All 3 headlines named the organic segment and quoted its 22.2%, so the segment check never had to retry. All 3 runs chose a landing-page hypothesis for organic traffic (10-day test). Every final answer came from flash-lite: 3.8-flash returned 503 or timed out each time it was tried.
+
