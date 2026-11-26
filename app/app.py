@@ -1,10 +1,9 @@
 """Funnel Leak Finder: upload a funnel CSV, see the biggest leak, get 3 hypotheses and an experiment brief.
 
-Run: streamlit run app/app.py
+Run: streamlit run app/app.py (from the repo root; also the entry point on Streamlit Community Cloud)
 """
 
 import sys
-import time
 from pathlib import Path
 
 import altair as alt
@@ -128,58 +127,65 @@ st.subheader("Hypotheses and experiment brief")
 key = (upload.name if upload else "sample", view, mde, chain_leak)
 if st.button("Generate with Gemini", type="primary"):
     with st.spinner("Explaining the leak → 3 hypotheses → experiment brief…"):
-        start = time.perf_counter()
         try:
             st.session_state["result"] = chain.run(metrics, mde, chain_leak)
             st.session_state["result_key"] = key
         except Exception as e:  # show API or JSON errors in the UI instead of a stack trace
             st.error(f"Gemini call failed: {e}")
-        st.session_state["elapsed"] = time.perf_counter() - start
 
 result = st.session_state.get("result")
 if result and st.session_state.get("result_key") == key:
+    meta = result["_meta"]
+    if result["error"]:
+        done = ", ".join(meta["seconds"]) or "none"
+        st.error(f"{result['error']} The {chain.TOTAL_BUDGET_S} s budget ran out. Steps finished: {done}.")
+
     ex = result["explanation"]
     st.caption("Analysed: " + ("biggest testable leak" if result["leak_type"] == "testable" else "biggest leak"))
-    st.markdown(f"#### {ex['headline']}")
-    st.write(ex["explanation"])
-    if ex.get("segment_insight"):
-        st.write(ex["segment_insight"])
-    st.info(ex["data_quality_note"])
-    if ex.get("questions_to_check"):
-        st.markdown("**Check before acting:**\n" + "\n".join(f"- {q}" for q in ex["questions_to_check"]))
+    if ex:
+        st.markdown(f"#### {ex['headline']}")
+        st.write(ex["explanation"])
+        if ex.get("segment_insight"):
+            st.write(ex["segment_insight"])
+        st.info(ex["data_quality_note"])
+        if ex.get("questions_to_check"):
+            st.markdown("**Check before acting:**\n" + "\n".join(f"- {q}" for q in ex["questions_to_check"]))
 
-    st.markdown("#### 3 hypotheses")
-    for h in result["hypotheses"]:
-        best = " · **chosen for the brief**" if h.get("id") == result["best_hypothesis_id"] else ""
-        st.markdown(
-            f"**{h.get('id')}: {h.get('title')}**{best}  \n"
-            f"Impact: {h.get('expected_impact')} · Confidence: {h.get('confidence')}/10 · Scope: {h.get('scope')}  \n"
-            f"*Because* {h.get('because')}  \n*Test:* {h.get('change')}"
-        )
+    if result["hypotheses"]:
+        st.markdown("#### 3 hypotheses")
+        for h in result["hypotheses"]:
+            best = " · **chosen for the brief**" if h.get("id") == result["best_hypothesis_id"] else ""
+            st.markdown(
+                f"**{h.get('id')}: {h.get('title')}**{best}  \n"
+                f"Impact: {h.get('expected_impact')} · Confidence: {h.get('confidence')}/10 · Scope: {h.get('scope')}  \n"
+                f"*Because* {h.get('because')}  \n*Test:* {h.get('change')}"
+            )
 
     b, n = result["brief"], result["numbers"]
-    st.markdown(f"#### Experiment brief: {b.get('title', '')}")
-    st.markdown(f"> {b['hypothesis']}")
-    k1, k2, k3, k4 = st.columns(4)
-    k1.metric("Baseline → target", f"{pct(n['baseline_rate'])} → {pct(n['target_rate'])}")
-    k2.metric("Sample size per variant", f"{n['sample_size_per_variant']:,}")
-    k3.metric("Run time", f"{n['run_time_days']} days")
-    k4.metric("Daily users at step", f"{n['daily_users_at_step']:,}")
-    st.caption(f"Two-sided test, alpha {n['alpha']}, power {n['power']}, audience: {n['audience_basis']}. "
-               "Computed in code (app/stats.py), not by the LLM.")
-    st.markdown(
-        f"**Audience:** {b.get('audience')}  \n**Control:** {b.get('control')}  \n"
-        f"**Variant:** {b.get('variant')}  \n**Primary metric:** {b.get('primary_metric')}  \n"
-        f"**Guardrails:** {', '.join(b.get('guardrail_metrics', []))}  \n"
-        f"**Decision rule:** {b.get('decision_rule')}"
-    )
-    if b.get("risks"):
-        st.markdown("**Risks:**\n" + "\n".join(f"- {r}" for r in b["risks"]))
+    if b:
+        st.markdown(f"#### Experiment brief: {b.get('title', '')}")
+        st.markdown(f"> {b['hypothesis']}")
+        k1, k2, k3, k4 = st.columns(4)
+        k1.metric("Baseline → target", f"{pct(n['baseline_rate'])} → {pct(n['target_rate'])}")
+        k2.metric("Sample size per variant", f"{n['sample_size_per_variant']:,}")
+        k3.metric("Run time", f"{n['run_time_days']} days")
+        k4.metric("Daily users at step", f"{n['daily_users_at_step']:,}")
+        st.caption(f"Two-sided test, alpha {n['alpha']}, power {n['power']}, audience: {n['audience_basis']}. "
+                   "Computed in code (app/stats.py), not by the LLM.")
+        st.markdown(
+            f"**Audience:** {b.get('audience')}  \n**Control:** {b.get('control')}  \n"
+            f"**Variant:** {b.get('variant')}  \n**Primary metric:** {b.get('primary_metric')}  \n"
+            f"**Guardrails:** {', '.join(b.get('guardrail_metrics', []))}  \n"
+            f"**Decision rule:** {b.get('decision_rule')}"
+        )
+        if b.get("risks"):
+            st.markdown("**Risks:**\n" + "\n".join(f"- {r}" for r in b["risks"]))
 
-    meta = result["_meta"]
-    models = ", ".join(f"{step}: {m}" for step, m in meta["models"].items())
+    models = ", ".join(f"{step}: {m}" for step, m in meta["models"].items()) or "none"
     fallback = " (fallback used)" if meta["fallback_used"] else ""
-    st.caption(f"Models: {models}{fallback} · {st.session_state['elapsed']:.1f} s in total · "
-               f"numbers copied correctly by the model: {'yes' if meta['numbers_copied_correctly'] else 'no (overwritten)'}")
+    timeouts = f" · timeouts: {len(meta['timeouts'])}" if meta["timeouts"] else ""
+    copied = {True: "yes", False: "no (overwritten)", None: "n/a"}[meta["numbers_copied_correctly"]]
+    st.caption(f"Models: {models}{fallback}{timeouts} · {meta['total_seconds']:.1f} s in total · "
+               f"numbers copied correctly by the model: {copied}")
 elif result:
     st.caption("Settings changed. Generate again for this view.")
