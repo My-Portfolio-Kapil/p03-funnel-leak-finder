@@ -2,14 +2,15 @@
 
 > For growth PMs at e-commerce companies: upload a funnel export, see where it leaks and for which segment, and get 3 hypotheses plus a test-ready A/B experiment brief, in under a minute.
 
-**Live demo:** _coming soon (P3-08)_ · **PM:** Kapil Babel · **Sprint 3** · **Cost:** €0
+### [▶ Live demo](https://funnelleaker.streamlit.app/)
+
+**PM:** Kapil Babel · **Sprint 3** · **Cost:** €0
 
 ## The problem
 Finding where the funnel leaks, at which step and for which segment, takes days of analyst time. Turning that into a testable experiment with hypotheses, a metric and a sample size takes more time again, so experiments start late or aren't sized properly.
 
 ## What it does
-![Funnel Leak Finder screenshot](docs/demo.png)
-_Screenshot placeholder: add `docs/demo.png`._
+![Funnel Leak Finder: data-quality warning and funnel chart with the biggest leak in red](docs/demo.png)
 
 1. Upload a funnel CSV (one row per day × device × medium, six funnel steps) or use the bundled GA4 sample.
 2. See the funnel, data-quality warnings, the **biggest leak** and the **biggest testable leak**.
