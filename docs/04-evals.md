@@ -53,4 +53,4 @@ One dataset for v1: `data/funnel.csv`, the GA4 sample e-commerce export (Google 
 | 2026-11-26 | same · run 3 | 7/7, segment named, numbers copied correctly | **46.0 s** (2.7 / 25.3 / 18.0). Step 2: flash-lite 503, 3.8-flash timed out at 20 s, flash-lite answered |
 
 All 3 runs finished within the 60 s bar, but 2 of 3 only just did, because of retries. All 3 headlines named the organic segment and quoted its 22.2%, so the segment check never had to retry. All 3 runs chose a landing-page hypothesis for organic traffic (10-day test). Every final answer came from flash-lite: 3.8-flash returned 503 or timed out each time it was tried.
-
+| 2026-11-27 | prompt 2 v2 (feasibility rule, no keyword personalisation) | 7/7, segment named, numbers copied correctly | **8.2 s** (1.9 / 3.4 / 2.9), no retries. **No keyword-based hypothesis**: H1 seasonal category banner, H2 page speed (all users, high, 8/10), H3 sticky category bar. H2 chosen: 23.2% → 25.5%, 4 days. Minor: the brief's "because" mentions organic traffic although the test targets all users |
