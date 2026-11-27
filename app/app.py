@@ -89,19 +89,24 @@ text = bars.mark_text(align="left", dx=4).encode(text="text:N", color=alt.value(
 st.altair_chart((bars + text).properties(height=260), width="stretch")
 
 # Leaks
-def show_leak(title: str, leak: dict, note: str) -> None:
+def show_leak(title: str, leak: dict, note: str, per_segment: bool = False) -> None:
+    """A leak card. `per_segment` shows the segment's loss vs. overall instead of the whole step's loss."""
     seg = leak["worst_segment"]
     st.markdown(f"**{title}**")
     st.caption(note)
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Step", f"{label(leak['from_step'])} → {label(leak['step'])}")
-    c2.metric("Users lost (all)", f"{leak['users_lost']:,}", f"{pct(leak['step_conversion'])} convert",
-              delta_color="off")
+    if per_segment:
+        c2.metric(f"Users lost vs. overall ({seg['value']})", f"{seg['users_lost_vs_overall']:,}",
+                  f"of {seg['users_entering']:,} {seg['value']} users", delta_color="off",
+                  help="Users this segment loses beyond what the overall step rate would lose.")
+    else:
+        c2.metric("Users lost (all users)", f"{leak['users_lost']:,}", f"{pct(leak['step_conversion'])} convert",
+                  delta_color="off")
     c3.metric(f"Segment: {seg['dimension']} = {seg['value']}", pct(seg["step_conversion"]),
               f"{seg['gap_vs_overall_pp']:+.1f} pp vs. overall", delta_color="inverse")
     days = seg["test_run_time_days"]
-    c4.metric("Test run time (segment)", f"{days} days" if days is not None else "n/a",
-              f"{seg['users_lost_vs_overall']:,} users lost vs. overall", delta_color="off")
+    c4.metric(f"Test run time ({seg['value']})", f"{days} days" if days is not None else "n/a")
 
 
 st.subheader("Leaks")
@@ -110,7 +115,7 @@ show_leak("Biggest leak", biggest,
 if testable:
     show_leak("Biggest testable leak", testable,
               f"The step × segment losing the most users vs. the overall rate whose test fits in "
-              f"{funnel.MAX_TEST_DAYS} days at this MDE.")
+              f"{funnel.MAX_TEST_DAYS} days at this MDE.", per_segment=True)
 else:
     st.info(f"No leak is testable within {funnel.MAX_TEST_DAYS} days at this MDE. "
             "Raise the MDE, or the chain runs on the biggest leak.")
