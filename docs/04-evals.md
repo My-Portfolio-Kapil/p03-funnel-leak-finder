@@ -28,11 +28,25 @@ One dataset for v1: `data/funnel.csv`, the GA4 sample e-commerce export (Google 
 
 ## Manual check (Kapil)
 - **Date:** 2026-11-27
-- **Verdict:** "We should look at %age fall too, not just absolute. Data sanity needs to be done."
-- **Result:** not a pass yet. The leak ranking needs a percentage-drop view as well as absolute users lost, and the data needs a sanity check before the leaks can be trusted.
-- **Follow-ups:**
-  - Rank leaks by percentage drop (step conversion) as well as absolute users lost.
-  - Sanity-check the export before ranking leaks, starting with the non-monotonic steps (21% of rows).
+- **Data checked:** `data/funnel.csv`, raw view, the app's biggest testable leak (visitor → product view, medium = organic) and the brief generated for it.
+- **Result: ❌ fail.** The app flags a weak segment leak. The real leak is the step itself, for all users.
+
+### Verdict
+1. **Misleading card.** "Users lost (all) 252,537" appears under the testable leak, but that's the whole step, not organic. Organic's real loss is 1,158 users. Label or show it per segment.
+2. **The leak is weak.** Organic is only 1.0 pp below average, and device rows are almost identical (23.2 / 23.1 / 23.1%). The segments barely differ. The real problem is the step itself: about 77% of everyone never views a product, and only ~20% of product viewers add to cart.
+3. **H1 isn't feasible.** "Dynamic headlines matching the user's organic search query": Google hides search keywords from websites ("not provided"), so you can't build this. H2 (page speed) or H3 (a "Shop best sellers" CTA) are the realistic tests.
+4. **The 15% lift target is optimistic** for a segment that's only 1 pp behind average.
+
+Earlier notes from the same check:
+- We should look at percentage fall too, not just absolute.
+- Data sanity needs to be done.
+
+### Follow-ups
+- Show the testable leak's card per segment: users lost vs. overall (1,158), not the whole step's 252,537.
+- Rank leaks by percentage drop as well as absolute users lost, and treat a step-wide leak (all segments within ~1 pp) as the finding instead of forcing a segment.
+- Hypotheses must be buildable with the data a shop has; add a feasibility rule to prompt 2 (e.g. no organic search keywords).
+- Make the lift target realistic for the size of the gap.
+- Sanity-check the export before ranking, starting with the non-monotonic steps (21% of rows).
 
 ## Results log
 | Date | Prompt/model version | Score | Notes |
