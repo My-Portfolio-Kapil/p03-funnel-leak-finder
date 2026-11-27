@@ -32,7 +32,7 @@ On the GA4 sample (Google Merchandise Store, Nov 2020–Jan 2021, 328,696 visito
 ## Results
 | Metric | Target | Result |
 |---|---|---|
-| Accuracy | Leak matches our manual analysis | ❌ Fail (manual check, P3-07): the app flagged organic (−1.0 pp), but segments barely differ. The real leak is the step itself: ~77% of all visitors never view a product, and ~20% of viewers add to cart. Its hypothesis H1 also wasn't buildable (Google hides organic search keywords) |
+| Accuracy | Leak matches our manual analysis | ✅ Pass with fixes (manual check, P3-07): funnel numbers verified (23.2% matches the CSV) and the anonymisation exclusions are correct. Segments barely differ (device ±0.1 pp, medium within ~2.5 pp), so the real opportunity is the whole visitor → product view step, not a segment. One infeasible hypothesis (search-keyword headlines); prompt fixed |
 | Test-ready brief | Hypothesis, metric, control, variant, sample size, run time, decision rule | ✅ 7/7 in all 5 logged runs |
 | Numbers correct | Brief's sample size and run time = code | ✅ Enforced in code, and the model copied them correctly in every run |
 | Speed | < 60 s | ✅ 3 of 3 runs since the 20 s timeout: 5.6 s, 56.2 s, 46.0 s (the slow ones because of 503s and timeouts). Before it, one run took 114 s |

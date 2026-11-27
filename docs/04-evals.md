@@ -28,25 +28,20 @@ One dataset for v1: `data/funnel.csv`, the GA4 sample e-commerce export (Google 
 
 ## Manual check (Kapil)
 - **Date:** 2026-11-27
-- **Data checked:** `data/funnel.csv`, raw view, the app's biggest testable leak (visitor → product view, medium = organic) and the brief generated for it.
-- **Result: ❌ fail.** The app flags a weak segment leak. The real leak is the step itself, for all users.
+- **Checked:** `data/funnel.csv` (raw view), both leaks in the app, and the chain's output for the biggest testable leak (visitor → product view, medium = organic).
+- **Verdict: ✅ pass, with the noted fixes.**
 
-### Verdict
-1. **Misleading card.** "Users lost (all) 252,537" appears under the testable leak, but that's the whole step, not organic. Organic's real loss is 1,158 users. Label or show it per segment.
-2. **The leak is weak.** Organic is only 1.0 pp below average, and device rows are almost identical (23.2 / 23.1 / 23.1%). The segments barely differ. The real problem is the step itself: about 77% of everyone never views a product, and only ~20% of product viewers add to cart.
-3. **H1 isn't feasible.** "Dynamic headlines matching the user's organic search query": Google hides search keywords from websites ("not provided"), so you can't build this. H2 (page speed) or H3 (a "Shop best sellers" CTA) are the realistic tests.
-4. **The 15% lift target is optimistic** for a segment that's only 1 pp behind average.
+| Check | Result |
+|---|---|
+| Funnel numbers | ✅ Verified: 23.2% visitor → product view matches the CSV |
+| Excluding `(data deleted)` / `<Other>` | ✅ Correct (`(data deleted)` converts at 35.0%, +11.8 pp, and would otherwise distort the ranking) |
+| Leak finding | Segments are homogeneous: device ±0.1 pp, medium within ~2.5 pp. The bigger opportunity is the step itself across all users, not a segment. Segment-gap ranking adds little on this dataset |
+| Hypotheses | H1 (search-query headlines) infeasible, because organic search keywords are hidden ("not provided"). H2 and H3 are realistic. Prompt updated |
+| Brief | Complete, with guardrails and decision rule |
 
-Earlier notes from the same check:
-- We should look at percentage fall too, not just absolute.
-- Data sanity needs to be done.
-
-### Follow-ups
-- Show the testable leak's card per segment: users lost vs. overall (1,158), not the whole step's 252,537.
-- Rank leaks by percentage drop as well as absolute users lost, and treat a step-wide leak (all segments within ~1 pp) as the finding instead of forcing a segment.
-- Hypotheses must be buildable with the data a shop has; add a feasibility rule to prompt 2 (e.g. no organic search keywords).
-- Make the lift target realistic for the size of the gap.
-- Sanity-check the export before ranking, starting with the non-monotonic steps (21% of rows).
+**Fixes made**
+- The testable-leak card now shows the segment's loss vs. overall ("Users lost vs. overall (organic)": 1,158). The all-users loss (252,537) appears only on the biggest-leak card.
+- `prompts/2-hypotheses.md`: hypotheses must be feasible with standard web data; no keyword-based personalisation.
 
 ## Results log
 | Date | Prompt/model version | Score | Notes |
