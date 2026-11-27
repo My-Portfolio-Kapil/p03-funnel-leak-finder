@@ -12,6 +12,7 @@ Propose exactly 3 hypotheses for why users drop out at this step, each with a ch
 ## Rules
 - Each hypothesis must be about the leaky step (`leak.from_step` → `leak.step`), not other steps.
 - Each must name one concrete change to the site that a team could build in under two weeks.
+- Each must be feasible with standard web analytics and site data. Organic search keywords are NOT available: search engines hide them from websites ("not provided"). So no personalisation by the visitor's search query or keyword.
 - `scope` is "all" if the change targets all users, or "segment" if it targets only the worst segment (`leak.worst_segment`).
 - `expected_impact` is your judgement of the effect on this step's conversion: "high", "medium" or "low".
 - `confidence` is 1-10: how strongly the data and common e-commerce evidence support the hypothesis.
