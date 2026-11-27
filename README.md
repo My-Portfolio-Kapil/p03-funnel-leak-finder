@@ -18,16 +18,24 @@ _Screenshot placeholder: add `docs/demo.png`._
 ## Findings
 On the GA4 sample (Google Merchandise Store, Nov 2020–Jan 2021, 328,696 visitors):
 
-| | Biggest leak | Biggest testable leak |
-|---|---|---|
-| Step | Visitor → product view | Visitor → product view |
-| Segment | **cpc** (paid ads) | **organic** |
-| Segment conversion | 20.8% (−2.4 pp vs. 23.2% overall) | 22.2% (−1.0 pp) |
-| Users lost vs. overall rate | 362 | 1,158 |
-| A/B test run time (MDE 10%) | **75 days** | **10 days** |
+**1. The tool works, and it's honest about its data.**
+- **Data quality is checked, not assumed.** In 21% of rows (351 of 1,649), more users began checkout than added to cart. The app flags this, and the *strict* view caps each step at the previous one: purchases drop from 4,842 to 3,872 (−20%). The LLM must say how the flags limit its conclusion.
+- **Every leak gets a testability check.** A leak is only useful if a team can test a fix in reasonable time, so each one comes with an A/B test run time.
+- **Stats are in code.** Conversion rates, sample sizes and run times come from `funnel.py` and `stats.py`, never from the LLM, and the funnel numbers matched the manual check (23.2% visitor → product view).
 
-- **The worst segment isn't the one to test.** Paid traffic converts worst, but only ~166 paid visitors a day reach that step, so a test would take 75 days. Organic loses 3× more users vs. the overall rate and can be tested in 10 days. The tool ranks leaks by what a team can act on: the biggest leak whose test fits in 28 days.
-- **The raw funnel isn't a funnel.** In 21% of rows (351 of 1,649) more users began checkout than added to cart. The *strict* view caps each step at the previous one: purchases drop from 4,842 to 3,872 (−20%). The app flags this, and the LLM must say how it limits the conclusion.
+**2. On this dataset the segments barely differ, so the real opportunity is the step itself.**
+- About 77% of all visitors never view a product, and only ~20% of product viewers add to cart.
+- The segments convert almost the same at the product-view step: device within ±0.1 pp, medium within ~2.5 pp.
+- So the leak to fix is "visitor → product view" for everyone, not a segment. In the latest run the chain's chosen test was an all-users page-speed change, with a 4-day run time.
+
+**3. Testability matters more on data with real segment differences.** This example shows why:
+
+| Segment at visitor → product view | Gap vs. 23.2% overall | Test run time, MDE 10% | Test run time, MDE 15% |
+|---|---|---|---|
+| cpc (paid ads): converts worst | −2.4 pp | 75 days | 34 days |
+| organic: biggest testable leak | −1.0 pp | 10 days | 5 days |
+
+The worst segment isn't always the one to test: only ~166 paid visitors a day reach this step, so a cpc test takes months. The testable-leak ranking picks the largest leak whose test fits in 28 days. Here the gaps are too small for that to matter much. On a shop where, say, mobile converts far worse than desktop, it decides which test to run first.
 
 ## Results
 | Metric | Target | Result |
