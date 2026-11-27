@@ -26,6 +26,14 @@ One dataset for v1: `data/funnel.csv`, the GA4 sample e-commerce export (Google 
 - So we added a second ranking: the **biggest testable leak**, i.e. the step × segment losing the most users vs. the overall rate whose test fits in 28 days. On this data: **visitor → product view for organic traffic** (22.2%, −1.0 pp, 1,158 users lost vs. overall, **10 days**). The chain now runs on that one by default.
 - Product lesson: the worst segment is often small, and a leak you can't test in a month isn't actionable. The tool ranks by what a team can act on.
 
+## Manual check (Kapil)
+- **Date:** 2026-11-27
+- **Verdict:** "We should look at %age fall too, not just absolute. Data sanity needs to be done."
+- **Result:** not a pass yet. The leak ranking needs a percentage-drop view as well as absolute users lost, and the data needs a sanity check before the leaks can be trusted.
+- **Follow-ups:**
+  - Rank leaks by percentage drop (step conversion) as well as absolute users lost.
+  - Sanity-check the export before ranking leaks, starting with the non-monotonic steps (21% of rows).
+
 ## Results log
 | Date | Prompt/model version | Score | Notes |
 |---|---|---|---|
